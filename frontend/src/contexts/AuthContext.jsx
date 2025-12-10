@@ -1,69 +1,36 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext(null);
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  // Mock user - always authenticated, no login required
+  const [user] = useState({
+    id: 'demo-user',
+    email: 'demo@system.com',
+    name: 'Demo User',
+    role: 'Admin',
+    department: null,
+    is_active: true
+  });
 
-  useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      fetchUser();
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
+  const [loading] = useState(false);
 
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get(`${API}/auth/me`);
-      setUser(response.data);
-    } catch (error) {
-      console.error('Failed to fetch user:', error);
-      logout();
-    } finally {
-      setLoading(false);
-    }
+  // Dummy functions to maintain compatibility
+  const login = async () => {
+    console.log('Login bypassed - direct access enabled');
+    return user;
   };
 
-  const login = async (email, password) => {
-    console.log('Login attempt - API URL:', API);
-    console.log('REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
-
-    try {
-      const response = await axios.post(`${API}/auth/login`, { email, password });
-      console.log('Login response:', response.data);
-      const { access_token, user: userData } = response.data;
-      setToken(access_token);
-      setUser(userData);
-      localStorage.setItem('token', access_token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-      return userData;
-    } catch (error) {
-      console.error('Login error:', error);
-      console.error('Error response:', error.response);
-      throw error;
-    }
-  };
-
-  const register = async (userData) => {
-    await axios.post(`${API}/auth/register`, userData);
+  const register = async () => {
+    console.log('Registration bypassed - direct access enabled');
   };
 
   const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
+    console.log('Logout called - but authentication is disabled');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, isAuthenticated: true }}>
       {children}
     </AuthContext.Provider>
   );
